@@ -1,42 +1,22 @@
-const path = require("path");
 const jimp = require("jimp");
-const { version } = require("./package.json");
 const Vibrant = require("node-vibrant");
 
 const { toPalette, toBase64 } = require("./util");
 
-const ERROR_EXT = `Error: Input file is missing or of an unsupported image format lqip v${version}`;
-
-// supported images aka mimetypes
-const SUPPORTED_MIMES = {
-  jpeg: "image/jpeg",
-  jpg: "image/jpeg",
-  png: "image/png"
-};
-
 const base64 = file => {
   return new Promise((resolve, reject) => {
-    // get the extension of the chosen file
-    let extension = path.extname(file) || "";
-    extension = extension.split(".").pop();
-
-    // supported files for now are ['jpg', 'jpeg', 'png']
-    if (!SUPPORTED_MIMES[extension]) {
-      return reject(ERROR_EXT);
-    }
-
     return jimp
       .read(file)
       .then(image => image.resize(10, jimp.AUTO))
       .then(image =>
-        image.getBuffer(SUPPORTED_MIMES[extension], (err, data) => {
+        image.getBuffer(jimp.MIME_JPEG, (err, data) => {
           if (err) {
             return reject(err);
           }
 
           if (data) {
             // valid image Base64 string, ready to go as src or CSS background
-            return resolve(toBase64(SUPPORTED_MIMES[extension], data));
+            return resolve(toBase64(jimp.MIME_JPEG, data));
           }
           return reject(
             new Error('Unhandled promise rejection in base64 promise')
